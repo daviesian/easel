@@ -1,13 +1,15 @@
 (ns easel.Renderer
-  (:use [easel.RunnableGraphicsAlgorithm]
+  (:use [easel.AlgorithmInterfaces]
+        [easel.opengl]
         [seesaw.core]
         [seesaw.graphics]
         [seesaw.color])
-  (:import [javax.media.opengl.awt GLCanvas]
-           [javax.media.opengl GLEventListener])
+
   (:gen-class
-   :methods [#^{:static true} [initialise [int int easel.RunnableGraphicsAlgorithm] void]
-             #^{:static true} [setPixel [int int int int int] void]]))
+   :methods [#^{:static true} [init2D [int int easel.Algorithm2D] void]
+             #^{:static true} [init3D [easel.Algorithm3D] void]
+             #^{:static true} [setPixel [int int int int int] void]
+             #^{:static true} [drawCube [javax.media.opengl.GL] void]]))
 
 (def pixels (atom {}))
 (def pix-width (atom 5))
@@ -51,52 +53,48 @@
             (style :foreground "black")))
     ))
 
-(def listener
-  (reify GLEventListener
-    (display [this drawable]
-      (let [gl (-> drawable .getGL .getGL2)]
-        (.glBegin gl javax.media.opengl.GL/GL_TRIANGLES)
-        (.glColor3f gl 1 0 0)
-        (.glVertex2f gl -1 -1)
-        (.glVertex2f gl 0 1)
-        (.glVertex2f gl 1 -1)
-        (.glEnd gl)))
-    (init [this drawable])
-    (dispose [this drawable])
-    (reshape [this drawable x y width height])))
 
-(defn init-frame [width height on-close]
+
+
+(defn init-frame-2d [width height on-close]
   (native!)
   (reset! pixels {})
   (reset! pix-width width)
   (reset! pix-height height)
   (reset! easel-canvas (canvas :paint draw-alg))
   (let [run-button   (button :action (action :name "Run" :handler (fn [e] (@run-algorithm))))
-        gl-canvas    (GLCanvas.)
+
+
         speed-slider (slider :orientation :horizontal :min 0 :max 200 :value @set-pixel-delay :inverted? true)
-        f            (frame :title "Easel"
+        f            (frame :title "Easel 2D"
                             :content (border-panel :border 20
                                                    :north (border-panel :west run-button
                                                                         :center speed-slider)
                                                    :center @easel-canvas
-                                                   :south (border-panel :size [640 :by 480]
-                                                                        :center gl-canvas)
                                                    :hgap 20)
                             :on-close on-close
                             :minimum-size [320 :by 240])]
     (listen speed-slider :change (fn [e] (reset! set-pixel-delay (config speed-slider :value))))
-    (.addGLEventListener gl-canvas listener)
+
     (pack! f)
     (show! f)
     (reset! easel-frame f)))
 
+(defn init-frame-3d [on-close]
+  (native!)
+  (let [canvas (gl-canvas)
+        f (frame :title "Easel 3D"
+                 :content (border-panel :border 20
+                                        :center canvas)
+                 :on-close on-close
+                 :minimum-size [320 :by 240])]
+    (pack! f)
+    (show! f)))
 
 
 
-(defn -initialise [width height alg]
-  (println "Init with" alg)
-  (println (.getResource (ClassLoader/getSystemClassLoader) ""))
-  (init-frame width height :exit)
+(defn -init2D [width height alg]
+  (init-frame-2d width height :exit)
   (reset! run-algorithm #(future (reset! pixels {})
                                  (.runAlgorithm alg width height))))
 
@@ -109,3 +107,10 @@
 
 (defn -setPixel [x y r g b]
   (setPixel x y r g b))
+
+(defn -init3D [alg]
+  (init-frame-3d :exit)
+  (reset! render-func #(.renderFrame alg %)))
+
+(defn -drawCube [gl]
+  (render-cube gl))

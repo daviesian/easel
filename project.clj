@@ -5,6 +5,8 @@
                  [seesaw "1.4.2"]
                  [local/jogl.all.cl "1.0.0"]]
 
-  :aot [easel.RunnableGraphicsAlgorithm
+  :aot [easel.AlgorithmInterfaces
         easel.Renderer]
+
+  :uberjar-name "easel.jar"
   )
