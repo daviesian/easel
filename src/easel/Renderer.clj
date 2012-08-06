@@ -4,12 +4,21 @@
         [seesaw.core]
         [seesaw.graphics]
         [seesaw.color])
+  (:import [java.util.prefs Preferences])
 
   (:gen-class
    :methods [#^{:static true} [init2D [int int easel.Algorithm2D] void]
              #^{:static true} [init3D [easel.Algorithm3D] void]
              #^{:static true} [setPixel [int int int int int] void]
              #^{:static true} [drawCube [javax.media.opengl.GL] void]]))
+
+(defn put-pref [key value]
+  (let [p (Preferences/userNodeForPackage easel.Renderer)]
+    (.put p key value)))
+
+(defn get-pref [key default]
+  (let [p (Preferences/userNodeForPackage easel.Renderer)]
+    (.get p key default)))
 
 (def pixels (atom {}))
 (def pix-width (atom 5))
@@ -19,7 +28,7 @@
 (def easel-canvas (atom nil))
 
 (def run-algorithm (atom nil))
-(def set-pixel-delay (atom 100))
+(def set-pixel-delay (atom (Integer/parseInt (get-pref "pixel-delay" "100"))))
 
 (defn get-canvas-width []
   (int (.getWidth (config @easel-canvas :size))))
@@ -33,8 +42,9 @@
         max-cell-width  (float (/ (- frame-width 1) @pix-width))
         max-cell-height (float (/ (- frame-height 1) @pix-height))
         grid-size       (Math/min max-cell-width max-cell-height)
-        x-offset        (/ (- frame-width (* grid-size @pix-width)) 2)
-        y-offset        (/ (- frame-height (* grid-size @pix-height)) 2)
+        grid-size       (if (< grid-size 5) (Math/floor grid-size) grid-size)
+        x-offset        (Math/floor (/ (- frame-width (* grid-size @pix-width)) 2))
+        y-offset        (Math/floor (/ (- frame-height (* grid-size @pix-height)) 2))
         pixels          @pixels]
     (translate g x-offset y-offset)
     (doseq [[x y] (keys pixels)]
@@ -43,14 +53,15 @@
         (draw g
               (rect xT yT grid-size grid-size)
               (style :background (apply color (get pixels [x y]))))))
-    (doseq [x (range (+ 1 @pix-width))]
-      (draw g
-            (line (* grid-size x) 0 (* grid-size x) (* grid-size @pix-height))
-            (style :foreground "black")))
-    (doseq [y (range (+ 1 @pix-height))]
-      (draw g
-            (line 0 (* grid-size y) (* grid-size @pix-width) (* grid-size y))
-            (style :foreground "black")))
+    (when (> grid-size 5)
+      (doseq [x (range (+ 1 @pix-width))]
+        (draw g
+              (line (* grid-size x) 0 (* grid-size x) (* grid-size @pix-height))
+              (style :foreground "black")))
+      (doseq [y (range (+ 1 @pix-height))]
+        (draw g
+              (line 0 (* grid-size y) (* grid-size @pix-width) (* grid-size y))
+              (style :foreground "black"))))
     ))
 
 
@@ -73,10 +84,20 @@
                                                    :center @easel-canvas
                                                    :hgap 20)
                             :on-close on-close
-                            :minimum-size [320 :by 240])]
-    (listen speed-slider :change (fn [e] (reset! set-pixel-delay (config speed-slider :value))))
+                            :minimum-size [320 :by 240]
+                            :size [(Integer/parseInt (get-pref "frame-width" "320"))
+                                   :by
+                                   (Integer/parseInt (get-pref "frame-height" "240"))])]
+    (listen f :component-resized (fn [e] (let [size   (.getSize (.getComponent e))
+                                              width  (int (.getWidth size))
+                                              height (int (.getHeight size))]
+                                          (put-pref "frame-width" (str width))
+                                          (put-pref "frame-height" (str height)))))
+    (listen speed-slider :change (fn [e]
+                                   (reset! set-pixel-delay (config speed-slider :value))
+                                   (put-pref "pixel-delay" (str @set-pixel-delay))))
 
-    (pack! f)
+    ;(pack! f)
     (show! f)
     (reset! easel-frame f)))
 

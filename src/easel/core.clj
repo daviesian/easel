@@ -7,10 +7,9 @@
 
 ;; State stuff
 
-#_(do
-  (init-frame-2d 10 5 :dispose)
+(do
+  (init-frame-2d 100 50 :dispose)
 
-  ;; This woreduld be in Java somehow
   (defn my-algorithm [width height]
     (doseq [x (range width)]
       (doseq [y (range height)]
@@ -20,7 +19,7 @@
                            (reset! pixels {})
                            (my-algorithm @pix-width @pix-height) )))
 
-(do
+#_(do
   (let [a (atom 0)]
     (reset! render-func
             (fn [gl]
