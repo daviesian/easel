@@ -43,6 +43,7 @@
         max-cell-height (float (/ (- frame-height 1) @pix-height))
         grid-size       (Math/min max-cell-width max-cell-height)
         grid-size       (if (< grid-size 5) (Math/floor grid-size) grid-size)
+        grid-size       (if (< grid-size 1) 1 grid-size)
         x-offset        (Math/floor (/ (- frame-width (* grid-size @pix-width)) 2))
         y-offset        (Math/floor (/ (- frame-height (* grid-size @pix-height)) 2))
         pixels          @pixels]
