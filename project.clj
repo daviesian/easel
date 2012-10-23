@@ -4,9 +4,10 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [seesaw "1.4.2"]
                  [local/jogl.all.cl "1.0.0"]]
+  :java-source-paths ["java-src"]
 
-  :aot [easel.AlgorithmInterfaces
-        easel.Renderer]
+  :aot [;;easel.AlgorithmInterfaces
+        easel.InnerRenderer]
 
   :uberjar-name "easel.jar"
   )

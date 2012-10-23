@@ -1,0 +1,1 @@
+javac -cp target\classes\;repo\local\jogl.all.cl\1.0.0\jogl.all.cl-1.0.0.jar -d target\classes java-src-post\easel\Renderer.java
