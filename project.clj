@@ -3,7 +3,7 @@
   :repositories {"local" ~(str (.toURI (java.io.File. "repo")))}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [seesaw "1.4.2"]
-                 [local/jogl.all.cl "1.0.0"]]
+                 [local/jogl.all.cl "2.0.1"]]
   :java-source-paths ["java-src"]
 
   :aot [;;easel.AlgorithmInterfaces

@@ -1,13 +1,18 @@
 # easel
 
-FIXME: write description
+A framework for experimenting with graphics algorithms
+## Notes
 
-## Usage
+- To install jogl.all.cl-2.0.1.jar into local repo, do:
 
-FIXME: write
+`mvn deploy:deploy-file -Dfile=jogl.all.cl-2.0.1.jar 
+                        -DartifactId=jogl.all.cl 
+						-Dversion=2.0.1
+						-DgroupId=local 
+						-Dpackaging=jar 
+						-Durl=file:repo 
+						-DcreateChecksum=true`
 
 ## License
 
-Copyright (C) 2012 FIXME
-
-Distributed under the Eclipse Public License, the same as Clojure.
+Copyright (C) 2012 Ian Davies
